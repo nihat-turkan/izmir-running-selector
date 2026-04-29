@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>İzmir Running Route Selector</title>
+    <style>
+        /* CSS: Modern ve Responsive Tasarım */
+        :root {
+            --primary-color: #2563eb;
+            --hover-color: #1d4ed8;
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-color: #1f2937;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #111827;
+        }
+
+        p.subtitle {
+            color: #6b7280;
+            margin-bottom: 30px;
+        }
+
+        /* Soru Kartları */
+        .question-box {
+            display: none; /* Başlangıçta gizli */
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .question-box.active {
+            display: block;
+        }
+
+        h3 {
+            font-size: 20px;
+            margin-bottom: 20px;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        button.option-btn {
+            background-color: #f9fafb;
+            border: 2px solid #e5e7eb;
+            color: var(--text-color);
+            padding: 15px 20px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+            font-weight: 500;
+        }
+
+        button.option-btn:hover {
+            border-color: var(--primary-color);
+            background-color: #eff6ff;
+        }
+
+        /* Sonuç Kartı */
+        #result-card {
+            display: none;
+            background: linear-gradient(135deg, #2563eb, #3b82f6);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-top: 20px;
+            animation: scaleIn 0.5s ease-out;
+        }
+
+        #result-title {
+            font-size: 18px;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+
+        #result-route {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .reset-btn {
+            background-color: white;
+            color: var(--primary-color);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .reset-btn:hover {
+            background-color: #f3f4f6;
+        }
+
+        /* Animasyonlar */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes scaleIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>🏃 İzmir Running Selector</h1>
+        <p class="subtitle">Find the perfect route based on your current needs.</p>
+
+        <!-- Soru 1: Distance -->
+        <div id="q1" class="question-box active">
+            <h3>1. What is your target mileage?</h3>
+            <div class="options">
+                <button class="option-btn" onclick="selectOption('distance', 'short')">Short & Sweet (5k - 10k)</button>
+                <button class="option-btn" onclick="selectOption('distance', 'long')">Endurance Mode (15k - 21k+)</button>
+            </div>
+        </div>
+
+        <!-- Soru 2: Surface -->
+        <div id="q2" class="question-box">
+            <h3>2. What kind of surface do you prefer?</h3>
+            <div class="options">
+                <button class="option-btn" onclick="selectOption('surface', 'paved')">Paved / Asphalt (Speed focus)</button>
+                <button class="option-btn" onclick="selectOption('surface', 'soft')">Soft / Dirt (Knee protection)</button>
+            </div>
+        </div>
+
+        <!-- Soru 3: Incline (Sadece Short seçilirse gelir) -->
+        <div id="q3" class="question-box">
+            <h3>3. Are you looking for a flat cruise or hills?</h3>
+            <div class="options">
+                <button class="option-btn" onclick="selectOption('incline', 'flat')">Flat as a pancake (Steady tempo)</button>
+                <button class="option-btn" onclick="selectOption('incline', 'hilly')">Bring on the hills (Strength)</button>
+            </div>
+        </div>
+
+        <!-- Soru 4: Time (Sadece Long + Paved seçilirse gelir) -->
+        <div id="q4" class="question-box">
+            <h3>3. When will you be hitting the track?</h3>
+            <div class="options">
+                <button class="option-btn" onclick="selectOption('time', 'day')">Daylight (Scenic views)</button>
+                <button class="option-btn" onclick="selectOption('time', 'night')">After Dark (Well-lit paths)</button>
+            </div>
+        </div>
+
+        <!-- Soru 5: Access (Sadece Long + Soft seçilirse gelir) -->
+        <div id="q5" class="question-box">
+            <h3>3. How are you reaching the starting point?</h3>
+            <div class="options">
+                <button class="option-btn" onclick="selectOption('access', 'transit')">Public Transit (Metro/Tram)</button>
+                <button class="option-btn" onclick="selectOption('access', 'car')">Private Car (Need parking)</button>
+            </div>
+        </div>
+
+        <!-- Sonuç Kartı -->
+        <div id="result-card">
+            <div id="result-title">Your Optimal Route:</div>
+            <div id="result-route">Route Name</div>
+            <button class="reset-btn" onclick="resetApp()">Start Over</button>
+        </div>
+    </div>
+
+    <script>
+        // JS: Mantık Matrisi (The "Brain")
+        
+        // Değişkenlerimizi tuttuğumuz obje
+        let userChoices = {
+            distance: null,
+            surface: null,
+            incline: null,
+            time: null,
+            access: null
+        };
+
+        // Kullanıcı butona tıkladığında çalışan fonksiyon
+        function selectOption(variable, value) {
+            userChoices[variable] = value;
+            determineNextStep();
+        }
+
+        // Akış Diyagramına (Flowchart) göre sıradaki soruyu belirleme
+        function determineNextStep() {
+            hideAllBoxes();
+
+            if (!userChoices.distance) {
+                document.getElementById('q1').classList.add('active');
+            } 
+            else if (!userChoices.surface) {
+                document.getElementById('q2').classList.add('active');
+            } 
+            else {
+                // Flowchart Branching Logic (Yol Ayrımları)
+                if (userChoices.distance === 'short' && !userChoices.incline) {
+                    document.getElementById('q3').classList.add('active');
+                } 
+                else if (userChoices.distance === 'long' && userChoices.surface === 'paved' && !userChoices.time) {
+                    document.getElementById('q4').classList.add('active');
+                } 
+                else if (userChoices.distance === 'long' && userChoices.surface === 'soft' && !userChoices.access) {
+                    document.getElementById('q5').classList.add('active');
+                } 
+                else {
+                    // Yeterli cevap alındıysa sonucu hesapla
+                    calculateAndShowResult();
+                }
+            }
+        }
+
+        // VİDEO ESNASINDA GÖSTERECEĞİN EN ÖNEMLİ YER BURASI! (8 Logic Strings)
+        function calculateAndShowResult() {
+            let result = "";
+            let d = userChoices.distance;
+            let s = userChoices.surface;
+            let i = userChoices.incline;
+            let t = userChoices.time;
+            let a = userChoices.access;
+
+            // Logic String 1
+            if (d === 'short' && s === 'paved' && i === 'flat') {
+                result = "Göztepe - Konak Coastline";
+            } 
+            // Logic String 2
+            else if (d === 'short' && s === 'paved' && i === 'hilly') {
+                result = "Buca Yedigöller Park";
+            } 
+            // Logic String 3
+            else if (d === 'short' && s === 'soft' && i === 'flat') {
+                result = "Kültürpark (Lozan Loop)";
+            } 
+            // Logic String 4
+            else if (d === 'short' && s === 'soft' && i === 'hilly') {
+                result = "Balçova Manastır Trail";
+            } 
+            // Logic String 5
+            else if (d === 'long' && s === 'paved' && t === 'night') {
+                result = "Bostanlı - Mavişehir Path";
+            } 
+            // Logic String 6
+            else if (d === 'long' && s === 'paved' && t === 'day') {
+                result = "Karşıyaka - Tersane Route";
+            } 
+            // Logic String 7
+            else if (d === 'long' && s === 'soft' && a === 'transit') {
+                result = "İnciraltı Kent Ormanı (Lagoon Side)";
+            } 
+            // Logic String 8
+            else if (d === 'long' && s === 'soft' && a === 'car') {
+                result = "İnciraltı Kent Ormanı (Main Entrance)";
+            }
+
+            // Sonucu ekrana yazdır
+            document.getElementById('result-route').innerText = result;
+            document.getElementById('result-card').style.display = 'block';
+        }
+
+        // Tüm soruları gizleyen yardımcı fonksiyon
+        function hideAllBoxes() {
+            let boxes = document.querySelectorAll('.question-box');
+            boxes.forEach(box => box.classList.remove('active'));
+            document.getElementById('result-card').style.display = 'none';
+        }
+
+        // Uygulamayı sıfırlama
+        function resetApp() {
+            userChoices = { distance: null, surface: null, incline: null, time: null, access: null };
+            hideAllBoxes();
+            document.getElementById('q1').classList.add('active');
+        }
+    </script>
+</body>
+</html>
